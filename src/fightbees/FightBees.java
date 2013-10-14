@@ -1,9 +1,5 @@
 package fightbees;
-/*Time:2013-9-18 22:47
- *Function:打蜜蜂 
- *Author: l0st541
- */
-import java.applet.AudioClip;
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -14,14 +10,14 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
-
 import javax.imageio.ImageIO;
 
-/////////JPanel上画图/////////////////////////////
+/////////JPanel上画背景图/////////////////////////
+@SuppressWarnings("serial")
 class ImagePanel extends JPanel 
 {
 	private Image image;
@@ -39,66 +35,83 @@ class ImagePanel extends JPanel
 	    super.paintComponent(g);
 	    g.drawImage(image, 0, 0, this);
 	}
-}    
+}  
 
-//bee  构造一个继承 JPanel的蜜蜂  添加  蜜蜂自动向下移动的方法
-class beeLabel extends JLabel
+////////////////////////////////
+///计时器_thread()实现
+class PrintTime implements Runnable
 {
-	private Image image2;
+	private JLabel t_lable;
+	private boolean t_b;
 	
-	public beeLabel()
+	public PrintTime(JLabel jb, boolean b)
 	{
+		t_lable = jb;
+		t_b = b; 
+	}
+	@Override
+	public void run()
+	{
+		int i,j;
+		i=j=0;
 		try {
-            image2 = ImageIO.read(new File("img\\ybee.jpg"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-		
+		  String prestr = t_lable.getText();//先前label上的文字
+		  while(t_b)
+		  {
+			  Thread.sleep(1000);
+			  i++;
+			  if(i>59 && j<60)
+				{
+					i=0;
+					j++;
+				}
+				if(j<10)
+				{
+					if(i<10)
+				      t_lable.setText(prestr +"0"+ j +":0"+ i);
+					else
+					  t_lable.setText(prestr +"0"+ j +":"+ i);
+				}
+				else
+				{
+					if(i<10)
+					  t_lable.setText(prestr + j +":0"+ i);
+					else
+					  t_lable.setText(prestr + j +":"+ i);
+				}
+		  }
+		 
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+			t_lable.setText("计时器出错+_+");
+		}	
 	}
-	
-	protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        g.drawImage(image2, 0, 0, this);
-    }
-	
-}
-
-//随机指定范围的 n位不相同的数
-class randomBee
-{
-	String path1="img\\gbee.jpg";//green
-	String path2="img\\bbee.jpg";//blue
-	String path3="img\\ybee.jpg";//yellow
-	String path4="img\\rbee.jpg";//red
-	int num=0;
-	
-	private void CreateBee(int x)
-	{
-		
-	}
-	Random random=new Random();
-	
-	
 }
 
 @SuppressWarnings("serial")
 public class FightBees extends JFrame 
 {
 	/**
-	 * @param args
+	 * @窗体布局
 	 */
-	//private JLabel gamebox; //panel 中加 带图片的 label 实现背景效果
-	private JLabel authorinfo;
-	private JLabel imgblock;
+	private boolean is_play=true;//游戏开始判断
+    
+	int count_beenum=0; //蜜蜂只数
+	//容器
+	private	Container con=this.getContentPane();
+	private JLabel authorinfo;//author
+	private JLabel grades;//分数
+	private JLabel beenum;//蜜蜂数
+	private JLabel marktime;//计时器
 	
-	private JLabel bee;  //bee上画蜜蜂
-	private beeLabel bee2;
 	private JLabel bullet;//bullet上画子弹
 	private JLabel airplane;  //airplane上画飞机
 	
 	private JTextArea instruction;  //游戏说明
 	private JButton btnplay; 
 	private JButton btnstop;
+	private JButton btnexit;
 
 	private ImagePanel imgpanel=new ImagePanel();//实例化一个可 设置背景图片的 JPanel
 	
@@ -109,26 +122,15 @@ public class FightBees extends JFrame
 		Border lineBorder=new LineBorder(Color.white,5);//黑边框
 		
 		/*左边元素*/
-		//背景图片530*470
-		/*
-			ImageIcon image = new ImageIcon("img\\bg.jpg"); 
-			image.setImage(image.getImage().getScaledInstance(530,470,Image.SCALE_DEFAULT)); 
-			gamebox=new JLabel(image);
-			gamebox.setSize(530,470);
-			gamebox.setBorder(new EmptyBorder(5, 5, 5, 5));//外边距上下左右各5
-			gamebox.setBorder(lineBorder);
-		*/
+		//背景图片400*470
+		
 		//panel上画背景图片OK
 		imgpanel.setBorder(new EmptyBorder(5,5,5,5));
 		imgpanel.setBorder(lineBorder);
-		imgpanel.setSize(530,470);
+		imgpanel.setSize(400,470);
 		
 		//蜜蜂图片
-		bee=new JLabel();
-		bee.setIcon(new ImageIcon("img\\gbee.jpg"));
 		
-		//bee.setBounds(0,0,30,30);
-		//bee.setIcon(new ImageIcon("img\\gbee.jpg"));
 		//子弹图片
 		bullet=new JLabel();
 		bullet.setIcon(new ImageIcon("img\\bullet.jpg"));
@@ -140,19 +142,20 @@ public class FightBees extends JFrame
 		/*右边元素*/
 		//说明
 		instruction=new JTextArea();
-		instruction.setText("游戏说明:"+"\n"+"上、下、左、右、键"+"\n"+"控制方向."+"\n"+"击完蜜蜂者胜！");
+		instruction.setText(" 游戏说明:"+"\n"+" 上、下、左、右、键"+"\n"+" 控制方向."+"\n"+" 击完蜜蜂者胜！");
 		instruction.setEditable(false);//不可编辑
 		//游戏作者
 		authorinfo=new JLabel();
-		authorinfo.setText("Created by vvwang");
+		authorinfo.setText(" By marlonwang ");
 		authorinfo.setFont(new Font("SansSerif",Font.BOLD,20));
 		authorinfo.setForeground(Color.lightGray);
-		authorinfo.setHorizontalAlignment(JLabel.CENTER);//对齐方式
-		
-		//游戏图片
-		imgblock=new JLabel();
-		imgblock.setSize(100, 200);
-		imgblock.setIcon(new ImageIcon("img\\jietu.jpg"));
+		authorinfo.setHorizontalAlignment(JLabel.CENTER);//对齐方式	
+		//游戏计分
+		beenum=new JLabel(" 当前蜜蜂数: 0");
+		beenum.setSize(80,30);
+		grades=new JLabel(" 当前分数: 0");
+		grades.setSize(80,30);
+		marktime=new JLabel(" 已用时间: ");
 		//开始按钮
 		btnplay=new JButton("开始");
 		btnplay.setSize(60, 30);
@@ -160,26 +163,20 @@ public class FightBees extends JFrame
 		//停止按钮
 		btnstop=new JButton("停止");
 		btnstop.setSize(60, 30);
+		//退出
+		btnexit=new JButton("退出");
+		btnstop.setSize(60, 30);
 	}
 	////////////////////////////////////////////////
 	///布局实现
 	private void layoutComponents()
 	{
-		//容器
-		Container con=this.getContentPane();
-		
 		/////////////////左边游戏区域//////////////////////////
-		//内层为bee  airplane 外层为imgpanel
+		//内层为bee (btnplay 中添加)  airplane 外层为imgpanel
 		///////////////////////////////////////////////////
-	    //	airplane.setBounds(530 / 2 - 30, 470 - 30, 30, 30);
+	   
 		imgpanel.add(airplane);
-		imgpanel.add(bee);
 		imgpanel.add(bullet);//添加子弹
-		/*panel中添加 带有图片的 label 再添加label 不能实现 图层 分离效果
-			JPanel gamepanel=new JPanel();
-			gamepanel.add(gamebox);
-			gamepanel.setSize(540,480);
-		*/
 		
 		///////////////////右边文字区域/////////////////////////
 		//    共有3个panel
@@ -187,21 +184,28 @@ public class FightBees extends JFrame
 		JPanel btn=new JPanel(new GridLayout(3,1,5,10));//按钮
 		btn.add(btnplay);
 		btn.add(btnstop);
+		btn.add(btnexit);
+		
 		btn.setBorder(new TitledBorder("Two Buttons"));//类似c# 按钮 groupbox
 		//文字 和 按钮 整合到一个instruct_btn panel中
 		JPanel instruct_btn =new JPanel(new GridLayout(2,1,5,10));
 		instruct_btn.add(instruction);
 		instruct_btn.add(btn);
 		
+		//grades+beenum+marktime
+		JPanel grade_beenum=new JPanel(new GridLayout(3,1));
+		grade_beenum.add(beenum);
+		grade_beenum.add(marktime);
+		grade_beenum.add(grades);
+		
 		//textpanel整合所有 右边的组件     (图片、文字、按钮)
 		JPanel textpanel=new JPanel(new BorderLayout());
-		textpanel.setSize(100,480);
+		textpanel.setSize(80,480);
 		textpanel.add(authorinfo,BorderLayout.NORTH);
-		textpanel.add(imgblock,BorderLayout.CENTER);
+		textpanel.add(grade_beenum,BorderLayout.CENTER);
 		textpanel.add(instruct_btn,BorderLayout.SOUTH);
 		
 		//用BorderLayout给整体布局
-		//con.add(gamepanel,BorderLayout.CENTER);//panel 中加 带图片的 label 实现背景效果
 		con.add(imgpanel,BorderLayout.CENTER);
 		con.add(textpanel,BorderLayout.EAST);
 		
@@ -209,61 +213,68 @@ public class FightBees extends JFrame
 	
 	////////////////////////////////////////////////////////
 	////paintBees画蜜蜂群
-	private void BaintBees()
+	private void paintBees()
 	{
-		int margin_left=10;
-		int [] []beeTeam={{1,1,1,1,1,1,1,1},
-				             {1,1,1,1,1,1,1,1},
-		                      {1,1,1,1,1,1,1,1},};
+		int x;
+		String path1="img\\gbee.jpg";//green
+		String path2="img\\bbee.jpg";//blue
+		String path3="img\\ybee.jpg";//yellow
+		String path4="img\\rbee.jpg";//red
 		
-		for(int i=0;i<9;i++)
+		JLabel blab=new JLabel();
+	  	//随机指定范围的 n位不相同的数
+		x = (int) (1+Math.random()*4);
+		switch(x)
 		{
-			if (beeTeam[0][i]==1)
-			{
-				
-			}
+		case 1:
+			blab.setIcon(new ImageIcon(path1));
+			break;
+		case 2:
+			blab.setIcon(new ImageIcon(path2));
+			break;
+		case 3:
+			blab.setIcon(new ImageIcon(path3));
+			break;
+		case 4:
+			blab.setIcon(new ImageIcon(path4));
+			break;
+		default:
+			blab.setIcon(new ImageIcon(path1));
+			break;
 		}
+		blab.setBounds(getX(), getY(), 30, 30);
+		blab.setBorder(new EmptyBorder(10, 10, 10, 10));
+		imgpanel.add(blab);  
 	}
 	
 	////////////////////////////////////////////////////////
-	///打蜜蜂
-	public FightBees()
-	{
-		createComponents();
-		layoutComponents();
-		//窗体布局
-		setTitle("JAVA小游戏——打蜜蜂");
-		setSize(735,480); //不设置大些 实际大小偏小
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);//居中
-    	//pack();//自动控制大小   panel 中加 带图片的 label 实现背景效果时使用 
-        
-        @SuppressWarnings("unused")
-		KeyMove keymove=new KeyMove();
-    	btnEventHanders();
-    	this.setResizable(false);
-	}
-	////////////////////////////////////////////////////////
 	///键盘 上下左右控制飞机移动
-	private class KeyMove implements KeyListener
+	private class KeyMove implements KeyListener,Runnable
 	{
+		
 		/*飞机移动范围  x [10,510]
 		 *         y [10,395]  
 		 */
-	    int x=260,y=385;//默认x y位置
-	    int increment=10;
-	    public KeyMove()
+	    private int x,y,i;//默认x y位置185, 385,  i 10;
+
+	    public KeyMove(int position_x,int position_y,int position_increment)
 	    {
-	        airplane.setLocation(x, y);
+	    	x = position_x;
+	    	y = position_y;
+	    	i = position_increment;
+	    }
+	    public void run()
+	    {
+	    	airplane.setLocation(x, y);
 	        airplane.addKeyListener(this);//添加事件监听器
 	        airplane.setFocusable(true);
 	    }
 	    //控制左移动
         private void leftmvlimit()
         {
-        	if(airplane.getLocation().getX()>=15 && airplane.getLocation().getX()<=510)//<15不动
+        	if(airplane.getLocation().getX()>=20 && airplane.getLocation().getX()<=380)//<15不动
         	{
-        		x-=increment;
+        		x-=i;
         	}
         	else {
         		x=(int) airplane.getLocation().getX();
@@ -272,9 +283,9 @@ public class FightBees extends JFrame
         //控制右移动
         private void rightmvlimit()
         {
-        	if(airplane.getLocation().getX()>=10 && airplane.getLocation().getX()<=485)//>485不动
+        	if(airplane.getLocation().getX()>=10 && airplane.getLocation().getX()<=350)//>355不动
         	{
-        		x+=increment;
+        		x+=i;
         	}
         	else {
         		x=(int) airplane.getLocation().getX();
@@ -285,7 +296,7 @@ public class FightBees extends JFrame
         {
         	if(airplane.getLocation().getY()>=20 && airplane.getLocation().getY()<=395)//<15不动
         	{
-        		y-=increment;
+        		y-=i;
         	}
         	else {
 				y=(int) airplane.getLocation().getY();
@@ -296,7 +307,7 @@ public class FightBees extends JFrame
         {
         	if(airplane.getLocation().getY()>=10 && airplane.getLocation().getY()<=385)//>385不动
         	{
-        		y+=increment;
+        		y+=i;
         	}
         	else {
 				y=(int) airplane.getLocation().getY();
@@ -308,22 +319,23 @@ public class FightBees extends JFrame
         int bullet_x=(int) airplane.getLocation().getX();
         private void bulletshoot()
         {
-        	//airplane.setLocation(x,y);
+        	
         	bullet.setBounds(bullet_x, bullet_y, 30, 30);//没有 该条件  子弹不动
         	bullet.setLocation(bullet_x, bullet_y);//初始化 子弹 设定在飞机正上方
         	bullet.setVisible(true);
         	//imgpanel.add(bullet);
         	//添加发射子弹声音
-            ClassLoader classLoader = this.getClass().getClassLoader();
-        	AudioClip au = JApplet.newAudioClip(classLoader.getResource("BONG.wav")); 
-			au.play();
+//          ClassLoader classLoader = this.getClass().getClassLoader();
+//        	AudioClip au = JApplet.newAudioClip(classLoader.getResource("BONG.wav")); 
+//			au.play();
         	Timer timer = new Timer(10, new ActionListener() {
     			@Override
     			public void actionPerformed(ActionEvent arg0) {
-    				// TODO Auto-generated method stub
+    				// TODO 子弹自动上移
     				if(bullet_y < 10)
     				{
     					bullet_y  = 355;
+    					
     					//AudioClip au = JApplet.newAudioClip(classLoader.getResource("BONG.wav")); 
     					//au.play();
     					//imgpanel.remove(bullet);
@@ -340,7 +352,7 @@ public class FightBees extends JFrame
         }
 		@Override
 	    public void keyPressed(KeyEvent e) {
-	        // TODO Auto-generated method stub
+	        // TODO 上下左右移动
 	        switch(e.getKeyCode())  
 	        {   
 	            case KeyEvent.VK_LEFT:  
@@ -364,11 +376,11 @@ public class FightBees extends JFrame
 	                break;  
 	        }
 	       airplane.setLocation(x,y);
-	      
+	       
 	    }
 	    @Override
 	    public void keyReleased(KeyEvent e) {
-	        // TODO Auto-generated method stub
+	        // TODO 按键释放
 	    }
 	    @Override
 	    public void keyTyped(KeyEvent e) {
@@ -376,45 +388,114 @@ public class FightBees extends JFrame
 	    }
 	}
 	
+	
+	////////////////////////////////////////////////////////
+	///打蜜蜂
+	public FightBees()
+	{
+		createComponents();
+		layoutComponents();
+		//窗体布局
+		setTitle("JAVA小游戏——打蜜蜂");
+		setSize(570,480); //不设置大些 实际大小偏小
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLocationRelativeTo(null);//居中
+		
+		//默认x y位置185, 385,  i 10;
+		Runnable planeMove=new KeyMove(185, 385, 10);
+		Thread moveThread=new Thread(planeMove);
+		moveThread.start();
+		//this.setResizable(false);//固定大小
+		
+		btnEventHanders();
+	}
+		
 	////////////////////////////////////////////////////////
 	///主函数
 	public static void main(String[] args) 
 	{
-		// TODO Auto-generated method stub 
-        JFrame.setDefaultLookAndFeelDecorated(true);
+		// TODO 主函数 
+		//显示效果不同
+        //JFrame.setDefaultLookAndFeelDecorated(true);
         FightBees frame=new FightBees();
-        frame.setVisible(true);
-        /*若内部类为非静态的  创建一个内部类的对象如下
-            //OuterClass.InnerClass innerObj= outerObj.InnerClass();
-           //例如 
-		  //FightBees.KeyMove keymove=frame.new KeyMove();//???
-         //frame.addKeyListener(keymove);
-        */
+        frame.setVisible(true);   
 	}
 	
 	////////////////////////////////////////////////////////
 	//按钮事件监听
+	
+	//开始
 	private class playgame implements ActionListener
 	{
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
+		public void actionPerformed(ActionEvent e) 
+		{
+			// TODO 开始按钮 负责 生成蜜蜂
+			int rdnum=(int)(1+Math.random()*3);//随机1~3个蜜蜂
+			for(int i=0;i<rdnum;i++)
+			{
+			   paintBees();
+			   count_beenum++;
+			}
+			beenum.setText(" 当前蜜蜂数: " + count_beenum);
+			//计时开始
 			
+			Runnable setime=new PrintTime(marktime, is_play);
+			Thread timeThread=new Thread(setime);
+			timeThread.start();//新线程 用于计时
+			
+			is_play=false;//避免再次点击开始 又添加一个线程
+			
+			//imgpanel.add(bullet);
+			FightBees.this.airplane.requestFocus();//airplane重获焦点
+			btnplay.setEnabled(false);//不可行
 		}
 	}
+	
+	//停止
 	private class stopgame implements ActionListener
 	{
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			
+		public void actionPerformed(ActionEvent e) 
+		{
+			// TODO 停止游戏
+			int ok=JOptionPane.showConfirmDialog(null, "确定停止游戏？","停止",
+					JOptionPane.OK_CANCEL_OPTION);
+			if(ok==0)//0--ok ; 1--cancle
+				
+			{
+			  imgpanel.remove(bullet);
+			  is_play=false;//
+			  invalidate();
+			  btnplay.setEnabled(true);
+			  
+			}
+		    FightBees.this.airplane.requestFocus();//airplane重获焦点  
 		}
 	}
+	
+	//退出
+	private class exitgame implements ActionListener
+	{
+		public void actionPerformed(ActionEvent e) 
+		{
+			int ok=JOptionPane.showConfirmDialog(null, "确定退出游戏？","退出",
+					JOptionPane.OK_CANCEL_OPTION);
+			if(ok==0)//0--ok ; 1--cancle
+		    System.exit(0);
+			FightBees.this.airplane.requestFocus();//airplane重获焦点
+		}
+	}
+	
 	/////////////////////////////////////////////////////////
 	///按钮事件  整合
 	private void btnEventHanders()
 	{
 		playgame playhandel=new playgame();
 		btnplay.addActionListener(playhandel);
+		
 		stopgame stophandel=new stopgame();
 		btnstop.addActionListener(stophandel);
+		
+		exitgame exithandle=new exitgame();
+		btnexit.addActionListener(exithandle);
 	}
 }
