@@ -356,6 +356,7 @@ public class FightBees extends JFrame
         		x=(int) airplane.getLocation().getX();
 			}
         }
+
         //øÿ÷∆…œ“∆
         private void upmvlimit()
         {
