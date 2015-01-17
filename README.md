@@ -5,13 +5,17 @@ TheBees
 
 * files list here
 
->project
->>src
->>>FightBees.java 112.wav BONG.wav
+> +project
+> 
+>  +src
+>   -FightBees.java
+>  +img
+>   -rbee.jpg
+>   -gbee.jpg
+>   -ybee.jpg
+>   -plane.jpg
+>   -bg.jpg
 
-> img
-	> bg.jpg gbee.jpg rbee.jpg ybee.jpg plane.jpg 
-> bin
 
 * Problems here:
 -------------
