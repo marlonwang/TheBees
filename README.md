@@ -4,18 +4,19 @@ TheBees
   a little game written in java
 
 * files list here
- >project
- >>src
- >>>FightBees.java
- >>>112.wav
- >>>BONG.wav
- >>img
- >>>bg.jpg
- >>>gbee.jpg
- >>>rbee.jpg
- >>>ybee.jpg
- >>>plane.jpg
- >>bin
+
+>project
+>>src
+>>>FightBees.java
+>>>112.wav
+>>>BONG.wav
+>>img
+>>>bg.jpg
+>>>gbee.jpg
+>>>rbee.jpg
+>>>ybee.jpg
+>>>plane.jpg
+>>bin
 \<br/ \>
 Problems here:
 -------------
