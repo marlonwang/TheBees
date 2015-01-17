@@ -5,16 +5,21 @@ TheBees
 
 * files list here
 
-> +project
+> src
 > 
->  +src
->   -FightBees.java
->  +img
->   -rbee.jpg
->   -gbee.jpg
->   -ybee.jpg
->   -plane.jpg
->   -bg.jpg
+> --FightBees.java
+> 
+> img
+> 
+> --rbee.jpg
+> 
+> --gbee.jpg
+> 
+> --ybee.jpg
+> 
+> --plane.jpg
+> 
+> --bg.jpg
 
 
 * Problems here:
