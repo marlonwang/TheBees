@@ -1,32 +1,29 @@
-TheBees
-=======
+#a little game written in java
+=====================
+## what's included
 
-  a little game written in java
+here is the list of this project:
 
-* files list here
+```
+TheBees/
+|-- bin/
+|-- |- fightbees
+|-- img/
+|-- |- bbee.jpg
+|-- |- bg.jpg
+|-- |- gbee.jpg
+|-- |- rbee.jpg
+|-- |- ybee.jpg
+|-- |- plane.jpg
+|-- src/
+|-- |-- fightbees/
+|-- |-- |- FightBees.java
+|-- |-- 112.wav
+|-- |-- BONG.wav
 
-> +src
-> 
-> --FightBees.java
-> 
-> --BONG.wav
-> 
-> --112.wav
-> 
-> +img
-> 
-> --rbee.jpg
-> 
-> --gbee.jpg
-> 
-> --ybee.jpg
-> 
-> --plane.jpg
-> 
-> --bg.jpg
+```
 
-
-* Problems here:
+##Problems here:
 -------------
 #####1.the collision detection isn't very accurate
 #####2.some picture may overflow from the panel
